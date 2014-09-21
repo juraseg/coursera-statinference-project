@@ -1,0 +1,79 @@
+---
+title: "Simulation of sample distribution of exponential iid values"
+output: pdf_document
+---
+
+In this report we'll investigate sample distribution of iid values, sampled from population which follows exponential distribution.
+
+Exponential distribution is defined by lambda = 0.2, which gives mean equals 1 / lambda = 5 and standard deviation is also 1 / lambda = 5.
+
+## Generating
+
+We need to simulate 1000 experiment, in each experiment generating 40 iid from exponential distribution population. For each experiment we need to calcualte mean. Following code generates means for 1000 experiments with 40 iid values in each:
+
+```{r}
+set.seed(1)
+lambda <- 0.2
+n <- 40
+nosim <- 1000
+
+means <- numeric(length = nosim)
+for (i in 1:nosim) {
+    means[i] <- mean(rexp(n, lambda))
+}
+```
+
+## Where the distribution is centered at
+
+The mean of obtained distribution:
+
+```{r, echo=FALSE}
+mu <- mean(means)
+```
+
+Mean of sample distribution should be close to the mean of population which is true - it's very close to 5.
+
+## How variable is the distribution
+
+Standard deviation of sample distribution aka standard error:
+
+```{r, echo=FALSE}
+s <- sd(means)
+```
+
+Theorerical value is standard deviation of population divided by square root of sample size:
+```{r, echo=FALSE}
+(1 / lambda) / sqrt(n)
+```
+
+So standard deviation of sample distribution is also close to its theoretical value.
+
+## Showing that the sample distribution follows normal distribution
+
+The distribution should be approximately normal, we can check this by plotting distribution and overlaying it with graph of normal distribution with theoretical values of mean and standard deviation:
+
+```{r, echo=FALSE}
+means <- data.frame(mean=means)
+library(ggplot2)
+g <- ggplot(means, aes(x=mean)) 
+g <- g + 
+    geom_histogram(aes(y=..density..), binwidth=0.2, colour="black", fill="white") + 
+    stat_function(fun=dnorm, colour="red", arg = list(mean = 1/lambda,sd = 1/lambda*(1/sqrt(n))))
+g <- g + 
+    xlab("Sample means") + 
+    ylab("Density") + 
+    ggtitle("Exponential distribution sample means")
+g
+```
+
+## 95% confidence interval
+
+Checking if population mean is covered by 95% confidence interval:
+
+```{r, echo=FALSE}
+mu + c(-1, 1) * qnorm(0.975) * s / sqrt(n)
+```
+
+## Conslusion
+
+Using simulated data we've shown that distribution of sample means from exponential distribution follows the normal distribution, ensuring that Central Limit Theorem applies here too.
